@@ -1,0 +1,526 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
+import java.util.Map;
+import java.awt.Graphics2D;
+import javax.swing.text.DateFormatter;
+import javax.swing.SwingUtilities;
+
+public class App implements ActionListener {
+        private static  JLabel userLabel;
+        private static  JTextField userText;
+        private static  JLabel passwordLabel;
+        private static  JPasswordField passwordText;
+        private static  JButton button; 
+        private static  JLabel success;
+        private static JProgressBar progressBar;
+        private static int taskProgress = 0;
+        private static JPanel tasksPanel;
+        private static JLabel [] taskLabels;
+        private static int currentLevel = 1;
+        private static JLabel levelLabel;
+        private static JLabel taskStatusLabel;
+        private static JButton[] taskButtons;
+        private static List<String> taskNames;
+        private static int tasksPerLevel=4;
+
+        private static Map<LocalDate, Integer> dailyTaskCount = new HashMap<>();
+        private static Map<LocalDate, List<String>> dailyCompletedTasks = new HashMap<>();
+        private static JButton statsButton;
+        private static LocalDate currentDate;
+        
+    public static void main(String[] args) throws Exception {
+       
+        JFrame frame = new JFrame();
+        JPanel panel = new JPanel();
+
+        frame.setSize(350,200);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+
+        frame.add(panel);
+
+        panel.setLayout(null);
+
+        userLabel = new JLabel("User Name");
+        userLabel.setBounds(10, 20, 80, 25);
+        panel.add(userLabel);
+
+        userText = new JTextField(20);
+
+        userText.setBounds(100,20,165,25);
+        panel.add(userText);
+
+        passwordLabel = new JLabel("Password");
+        passwordLabel.setBounds(10,50, 80, 25);
+
+        panel.add(passwordLabel);
+
+        passwordText = new JPasswordField();
+        passwordText.setBounds(100,50,165,25);
+        panel.add(passwordText);
+
+
+        button = new JButton("Login");
+        button.setBounds(10,80,80,25);
+        button.addActionListener(new App());
+
+
+        success = new JLabel("");
+        success.setBounds(10,110,300,25);
+
+        panel.add(success);
+
+        
+        
+
+        panel.add(button);
+
+        frame.setVisible(true);
+
+
+        initializeAllTasks();
+        
+
+
+    }
+
+    private static void initializeAllTasks(){
+
+        taskNames = new ArrayList<>();
+
+        taskNames.add("Task 1: Clean Kitchen");
+        taskNames.add("Task 2: Vacuum The House");
+        taskNames.add("Task 3: Cooking");
+        taskNames.add("Task 4: Take the dog out");
+        taskNames.add("Task 5: Do Programming 4 homework");
+        taskNames.add("Task 6: Take trash Out");
+        taskNames.add("Task 7: Go to Gym");
+        taskNames.add("Task 8: Do Project work");
+        taskNames.add("Task 9: Clean Dust");
+        taskNames.add("Task 10: Clean the bathroom");
+        taskNames.add("Task 11: Dishes");
+        taskNames.add("Task 12: Pyykit");
+
+
+
+    }
+
+
+
+    private static void createProgressFrame(){
+
+        JFrame progressFrame = new JFrame("Task Progress Tracker");
+        JPanel mainPanel = new JPanel(new BorderLayout(10,10));
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d MMMM, yyyy");
+
+        String formattedDate = currentDate.format(formatter);
+        JLabel dateLabel = new JLabel("📅 " + formattedDate);
+        dateLabel.setHorizontalAlignment(JLabel.CENTER);
+        dateLabel.setBorder(BorderFactory.createEmptyBorder(5,0,5,0));
+
+        topPanel.add(dateLabel, BorderLayout.EAST);
+
+        statsButton = new JButton("View Statistics");
+        statsButton.addActionListener(e->createStatisticsWindow());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(statsButton);
+        topPanel.add(buttonPanel, BorderLayout.WEST);
+
+        JLabel helloLabel = new JLabel("Welcome To Routine Tracker " + userText.getText() +"!");
+        topPanel.add(helloLabel, BorderLayout.NORTH);
+
+        JPanel progressPanel = new JPanel(new BorderLayout());
+        JLabel progressLabel = new JLabel("Overall Progress ");
+
+        JPanel levelProgressPanel = new JPanel(new BorderLayout());
+
+        levelLabel = new JLabel("Level: " + currentLevel);
+        levelLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        progressBar = new JProgressBar(0,100);
+        progressBar.setStringPainted(true);
+        progressBar.setValue(0);
+
+        levelProgressPanel.add(levelLabel, BorderLayout.NORTH);
+        levelProgressPanel.add(progressLabel, BorderLayout.CENTER);
+
+        progressPanel.add(levelProgressPanel, BorderLayout.NORTH);
+        progressPanel.add(progressBar, BorderLayout.CENTER);
+
+        tasksPanel = new JPanel(new GridLayout(0,1,5,5));
+
+        tasksPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Tasks"));
+
+        taskStatusLabel = new JLabel("Complete Tasks to Increase progress ");
+
+            createTasksForCurrentLevel();
+
+           
+
+            JPanel centerPanel = new JPanel(new BorderLayout());
+
+            centerPanel.add(progressPanel,BorderLayout.NORTH);
+            centerPanel.add(tasksPanel, BorderLayout.CENTER);
+            centerPanel.add(taskStatusLabel, BorderLayout.SOUTH);
+
+            mainPanel.add(topPanel,BorderLayout.NORTH);
+            mainPanel.add(centerPanel, BorderLayout.CENTER);
+            mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10,10,10,10));
+
+
+            progressFrame.add(mainPanel);
+            progressFrame.setSize(500,500);
+            progressFrame.setLocationRelativeTo(null);
+            progressFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            progressFrame.setVisible(true);
+
+            
+        
+
+        
+    }
+
+    private static void createTasksForCurrentLevel(){
+
+        tasksPanel.removeAll();
+        tasksPanel.setBorder(BorderFactory.createTitledBorder("Tasks For Today - Level "+ currentLevel));
+
+        tasksPanel.setLayout(new GridBagLayout());
+        GridBagConstraints constrains = new GridBagConstraints();
+        constrains.fill = GridBagConstraints.HORIZONTAL;
+        constrains.weightx = 1.0;
+        constrains.insets = new Insets(2, 2, 2, 2);
+
+
+        int startTaskIndex = (currentLevel-1)*tasksPerLevel;
+        taskButtons = new JButton[tasksPerLevel];
+        taskLabels = new JLabel[tasksPerLevel];
+
+        for(int i=0; i<tasksPerLevel;i++){
+            int taskNumber = startTaskIndex+i;
+
+            if(taskNumber < taskNames.size()){
+                constrains.gridy = i;
+                constrains.gridx = 0;
+                constrains.weightx = 0.7;
+
+                //JPanel taskRow = new JPanel(new BorderLayout(5,5));
+
+                taskLabels[i] = new JLabel(taskNames.get(taskNumber) + " - PENDING");
+                tasksPanel.add(taskLabels[i], constrains);
+
+                constrains.gridx=1;
+                constrains.weightx = 0.3;
+
+                taskButtons[i] = new JButton("Start " + taskNames.get(taskNumber));
+
+                int finalI = i;
+                int finalTaskNumber = taskNumber;
+
+                taskButtons[i].addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        completeTask(finalI, finalTaskNumber, taskLabels[finalI]);
+                    }
+                });
+
+                //taskRow.add(taskLabels[i], BorderLayout.CENTER);
+                //taskRow.add(taskButtons[i], BorderLayout.EAST);
+                tasksPanel.add(taskButtons[i],constrains);
+            }
+        }
+
+        tasksPanel.revalidate();
+        tasksPanel.repaint();
+
+    }
+
+
+
+    private static void completeTask(int taskIndex, int taskNumber, JLabel taskLabel){
+
+            if(!taskLabel.getText().contains("Completed")){
+                taskProgress=taskProgress+(100/tasksPerLevel);
+                progressBar.setValue(taskProgress);
+
+                taskLabel.setText(taskNames.get(taskNumber)+ "- Completed ");
+
+                taskButtons[taskIndex].setEnabled(false);
+
+                taskStatusLabel.setText("Task Completed! Progress " + taskProgress + "%");
+
+                LocalDate today =LocalDate.now();
+
+                Integer currentCount;
+
+                if(dailyTaskCount.containsKey(today)){
+                    currentCount = dailyTaskCount.get(today);
+                }else{
+                    currentCount=0;
+                }
+
+                dailyTaskCount.put(today, currentCount+1);
+
+                if(!dailyCompletedTasks.containsKey(today)){
+                    dailyCompletedTasks.put(today, new ArrayList<>());
+                }
+                dailyCompletedTasks.get(today).add(taskNames.get(taskNumber));
+
+                if(taskProgress>=100){
+                 levelUp();
+                }
+            }
+    }
+
+
+    private static void levelUp(){
+        currentLevel++;
+        levelLabel.setText("Level: "+currentLevel);
+
+        taskProgress=0;
+        progressBar.setValue(0);
+
+
+        int nextLevelStart  = (currentLevel-1)*tasksPerLevel;
+
+        if(nextLevelStart < taskNames.size()){
+            createTasksForCurrentLevel();
+
+            taskStatusLabel.setText("Level Up! Now At Level "+currentLevel+" - New tasks For the current level");
+
+            for(JButton button : taskButtons){
+                if(button != null){
+                    button.setEnabled(true);
+                }
+            }
+        }
+    }
+
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        
+        String user = userText.getText();
+        String password = passwordText.getText();
+        
+
+        if (user.equals("Ville") && password.equals("12345")) {
+            
+            JFrame succesFrame = new JFrame("Login Successful");
+            JPanel successPanel = new JPanel();
+
+            succesFrame.setSize(350,200);
+            succesFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+            succesFrame.add(successPanel);
+
+            JLabel successMessage = new JLabel("Login Successful!");
+            successMessage.setBounds(100,25,150,25);
+
+            successPanel.add(successMessage);
+
+            JButton closeButton = new JButton("OK");
+
+            closeButton.setBounds(100,70,80,25);
+            closeButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    succesFrame.dispose();
+
+                    currentLevel=1;
+                    taskProgress=0;
+
+                    createProgressFrame();
+                }
+                
+            });
+
+            successPanel.setLayout(null);
+            successPanel.add(closeButton);
+            succesFrame.setVisible(true);
+
+            passwordText.setText("");
+
+            button.setEnabled(false);
+        }else{
+            success.setText("Invalid Username or Password");
+        }
+
+        
+    }
+
+
+    private static void createStatisticsWindow(){
+
+        JFrame statisticsFrame = new JFrame("Daily Statistics");
+        statisticsFrame.setSize(600,550);
+        statisticsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        statisticsFrame.setLocationRelativeTo(null);
+
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10,10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+
+        JLabel titleLabel = new JLabel("Daily Task Statistics", JLabel.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        mainPanel.add(titleLabel,BorderLayout.NORTH);
+
+        JPanel graphPanel = new JPanel(){
+            @Override
+            protected void paintComponent(Graphics g){
+                super.paintComponent(g);
+                drawBarGraph(g);
+            }
+
+            @Override
+            public Dimension getPreferredSize(){
+                return new Dimension(550,300);
+            }
+        };
+
+        graphPanel.setBackground(Color.CYAN);
+        graphPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        JPanel graphContainer = new JPanel(new BorderLayout());
+        graphContainer.add(graphPanel, BorderLayout.CENTER);
+
+        int totalCompletedTasks = 0;
+        for(List<String> tasks : dailyCompletedTasks.values()){
+            totalCompletedTasks+=tasks.size();
+        }
+
+        int activeDays = dailyTaskCount.size();
+
+        JLabel statisticLabel = new JLabel(String.format("Total Tasks Completed: %d | Active Days: %d",totalCompletedTasks, activeDays), JLabel.LEFT);
+        statisticLabel.setBorder(BorderFactory.createEmptyBorder(5,0,0,0));
+        graphContainer.add(statisticLabel, BorderLayout.SOUTH);
+
+        JPanel controlPanel = new JPanel();
+
+        JButton clearHistoryButton = new JButton("Clear History");
+        clearHistoryButton.addActionListener(e -> {
+            //dailyTaskCount.clear();
+            //dailyCompletedTasks.clear();
+            //graphPanel.repaint();
+            statisticLabel.setText("Total Tasks Completed: 0 | Active Days: 0");
+        });
+
+        
+
+
+
+        controlPanel.add(clearHistoryButton);
+
+        mainPanel.add(graphContainer, BorderLayout.CENTER);
+        mainPanel.add(controlPanel, BorderLayout.SOUTH);
+
+        statisticsFrame.add(mainPanel);
+        statisticsFrame.setVisible(true);
+
+
+
+    }
+
+
+    private static void drawBarGraph(Graphics g){
+
+        Graphics2D g2d = (Graphics2D) g;
+
+        int width = 550;
+        int height = 250;
+        int padding = 50;
+        int graphHeight = height - 2*padding;
+        int graphWidth = width - 2*padding;
+
+        g2d.drawLine(padding, padding, padding, height-padding);
+        g2d.drawLine(padding, height-padding, width-padding, height-padding);
+
+        if(dailyTaskCount.isEmpty()){
+            g2d.drawString("No Data Available", width/2-50, height/2);
+            return;
+        }
+
+        List<LocalDate> dates = new ArrayList<>(dailyTaskCount.keySet());
+        dates.sort((d1, d2) -> d1.compareTo(d2));
+
+        int maxTasks = dailyTaskCount.values().stream().max(Integer::compare).orElse(1);
+
+        if(maxTasks == 0){
+            maxTasks =1;
+        }
+
+        int barWidth = (graphWidth-20)/dates.size()-10;
+
+        if(barWidth>50){
+            barWidth=50;
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+
+        for(int i = 0; i<dates.size(); i++){
+            LocalDate date = dates.get(i);
+            int taskCount = dailyTaskCount.get(date);
+
+            int x = padding+20+i*(barWidth+15);
+            int barHeight = (int) ((double) taskCount / maxTasks * (graphHeight-30));
+
+            int y = height-padding-barHeight;
+
+            g2d.setColor(new Color(100,149,237));
+            g2d.fillRect(x, y, barWidth, barHeight);
+
+            g2d.setColor(Color.BLACK);
+            g2d.drawRect(x, y, barWidth, barHeight);
+
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(String.valueOf(taskCount), x+barWidth/2-5, y-5);
+
+            
+            g2d.drawString(date.format(formatter), x-5, height-padding+15);
+
+            DateTimeFormatter daysOfWeekFormatter = DateTimeFormatter.ofPattern("EEE");
+            g2d.drawString(date.format(daysOfWeekFormatter), x-5, height-padding+30);
+        }
+
+        for(int i = 0; i<=maxTasks;i++){
+
+            int y = height-padding-(i*(graphHeight-30)/maxTasks);
+
+            g2d.drawString(String.valueOf(i), padding-25, y+5);
+            g2d.drawLine(padding-5,y,padding,y);
+
+            
+        }
+        g2d.drawString("Tasks Completed", 10,50);
+    }
+}
