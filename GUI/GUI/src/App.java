@@ -1,5 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 public class App implements ActionListener {
@@ -50,6 +54,8 @@ public class App implements ActionListener {
         private static JTextField taskNameField;
         private static JButton saveTaskButton;
         private static JButton switchModeButton;
+        private static JRadioButton darkModeSwitchButton;
+        private static JRadioButton lightModeSwitchButton;
 
         private static Map<LocalDate, Integer> dailyTaskCount = new HashMap<>();
         private static Map<LocalDate, List<String>> dailyCompletedTasks = new HashMap<>();
@@ -178,12 +184,24 @@ public class App implements ActionListener {
         addTaskButton= new JButton("+ Add Task");
         addTaskButton.addActionListener(e->showAddTaskDialog());
 
+        ButtonGroup group = new ButtonGroup();
+
+        darkModeSwitchButton = new JRadioButton("Dark Mode");
+        lightModeSwitchButton = new JRadioButton("Light Mode");
+
+        group.add(darkModeSwitchButton);
+        group.add(lightModeSwitchButton);
+
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.lightGray);
         buttonPanel.add(statsButton);
         buttonPanel.add(switchModeButton);
         buttonPanel.add(addTaskButton);
+        buttonPanel.add(darkModeSwitchButton);
+        buttonPanel.add(lightModeSwitchButton);
         topPanel.add(buttonPanel, BorderLayout.WEST);
-
+        
+        
         
         
 
@@ -215,6 +233,17 @@ public class App implements ActionListener {
         taskStatusLabel = new JLabel("Complete Tasks to Increase progress ");
 
             createTasksForCurrentLevel();
+        
+        darkModeSwitchButton.addActionListener(e->{
+            applyTheme(mainPanel, true);
+            mainPanel.repaint();
+        });
+
+        lightModeSwitchButton.addActionListener(e->{
+            applyTheme(mainPanel, false);
+            mainPanel.repaint();
+        });
+
 
            
 
@@ -239,6 +268,39 @@ public class App implements ActionListener {
         
 
         
+    }
+
+    private static void applyTheme(Container container, boolean darkMode){
+        Color backGround;
+        Color foreGround;
+        Color buttonBackGround;
+
+        if(darkMode){
+            backGround = new Color(45,45,45);
+            foreGround = Color.WHITE;
+            buttonBackGround = new Color(70,70,70);
+        }else{
+            backGround=Color.white;
+            foreGround=Color.BLACK;
+            buttonBackGround=new Color(220,220,220);
+        }
+
+        for(Component comp : container.getComponents()){
+            if(comp instanceof  JPanel){
+                comp.setBackground(backGround);
+                applyTheme((Container) comp, darkMode);
+            }else if(comp instanceof JLabel){
+                comp.setForeground(foreGround);
+                comp.setBackground(backGround);
+            }else if(comp instanceof JButton){
+                comp.setBackground(buttonBackGround);
+                comp.setForeground(foreGround);
+            }else if(comp instanceof JProgressBar){
+                comp.setBackground(backGround);
+                comp.setForeground(Color.GREEN);
+            }
+        }
+        container.setBackground(backGround);
     }
 
     private static void showAddTaskDialog(){
