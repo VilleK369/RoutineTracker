@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -14,18 +15,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import java.util.Map;
-import java.awt.Graphics2D;
-import javax.swing.text.DateFormatter;
-import javax.swing.SwingUtilities;
 
 public class App implements ActionListener {
         private static  JLabel userLabel;
@@ -44,6 +43,13 @@ public class App implements ActionListener {
         private static JButton[] taskButtons;
         private static List<String> taskNames;
         private static int tasksPerLevel=4;
+        private static boolean usePredefinedTasks = true;
+        private static List<String> customTasks = new ArrayList<>();
+        private static JFrame addTaskFrame;
+        private static JButton addTaskButton;
+        private static JTextField taskNameField;
+        private static JButton saveTaskButton;
+        private static JButton switchModeButton;
 
         private static Map<LocalDate, Integer> dailyTaskCount = new HashMap<>();
         private static Map<LocalDate, List<String>> dailyCompletedTasks = new HashMap<>();
@@ -122,6 +128,11 @@ public class App implements ActionListener {
         taskNames.add("Task 10: Clean the bathroom");
         taskNames.add("Task 11: Dishes");
         taskNames.add("Task 12: Pyykit");
+        taskNames.add("Task 13: Go walking");
+        taskNames.add("Task 14: Make dinner");
+        taskNames.add("Task 15: Call relatives");
+        taskNames.add("Task 15: Brush Teeth");
+
 
 
 
@@ -148,9 +159,33 @@ public class App implements ActionListener {
 
         statsButton = new JButton("View Statistics");
         statsButton.addActionListener(e->createStatisticsWindow());
+
+        switchModeButton = new JButton("Mode: Predefined Tasks");
+        switchModeButton.addActionListener(e->{usePredefinedTasks= !usePredefinedTasks;
+            if(usePredefinedTasks){
+                switchModeButton.setText("Mode: Predefined Tasks");
+                taskStatusLabel.setText("Using Predefined Tasks");
+            }else{
+                switchModeButton.setText("Mode: Custom Tasks");
+                taskStatusLabel.setText("Using Custom Tasks - Add Task to create your own");
+            }
+            currentLevel = 1;
+            taskProgress = 0;
+            progressBar.setValue(0);
+            createTasksForCurrentLevel();
+        });
+
+        addTaskButton= new JButton("+ Add Task");
+        addTaskButton.addActionListener(e->showAddTaskDialog());
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(statsButton);
+        buttonPanel.add(switchModeButton);
+        buttonPanel.add(addTaskButton);
         topPanel.add(buttonPanel, BorderLayout.WEST);
+
+        
+        
 
         JLabel helloLabel = new JLabel("Welcome To Routine Tracker " + userText.getText() +"!");
         topPanel.add(helloLabel, BorderLayout.NORTH);
@@ -195,7 +230,7 @@ public class App implements ActionListener {
 
 
             progressFrame.add(mainPanel);
-            progressFrame.setSize(500,500);
+            progressFrame.setSize(800,500);
             progressFrame.setLocationRelativeTo(null);
             progressFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             progressFrame.setVisible(true);
@@ -206,10 +241,82 @@ public class App implements ActionListener {
         
     }
 
+    private static void showAddTaskDialog(){
+        if(!usePredefinedTasks){
+            addTaskFrame = new JFrame("Add Custom Task");
+            addTaskFrame.setSize(400,200);
+            addTaskFrame.setLocationRelativeTo(null);
+            addTaskFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+            JPanel panel = new JPanel(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            panel.add(new JLabel("Task Name:"), gbc);
+
+            gbc.gridx=1;
+            gbc.gridy=0;
+            gbc.weightx=1.0;
+            taskNameField= new JTextField(20);
+            panel.add(taskNameField,gbc);
+
+            gbc.gridx=0;
+            gbc.gridy=1;
+            gbc.gridwidth=2;
+            gbc.weightx=0;
+            saveTaskButton=new JButton("Save Task");
+            saveTaskButton.addActionListener(e->saveCustomTask());
+            panel.add(saveTaskButton, gbc);
+
+            gbc.gridy=2;
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(e->addTaskFrame.dispose());
+            panel.add(cancelButton,gbc);
+
+            addTaskFrame.add(panel);
+            addTaskFrame.setVisible(true);
+            
+        }else{
+            JOptionPane.showMessageDialog(null, "Please Switch to Custom Tasks-mode first!","Wrong Mode",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private static void saveCustomTask(){
+        String taskName = taskNameField.getText().trim();
+
+        if(!taskName.isEmpty()){
+            customTasks.add(taskName);
+            taskNameField.setText("");
+            JOptionPane.showMessageDialog(addTaskFrame, "Task " + taskName + " Added Successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            addTaskFrame.dispose();
+
+            currentLevel = 1;
+            taskProgress =0;
+            progressBar.setValue(0);
+
+
+            createTasksForCurrentLevel();
+
+            if(levelLabel!=null){
+                levelLabel.setText("Level: "+currentLevel);
+            }
+        }else{
+            JOptionPane.showMessageDialog(addTaskFrame, "Please Enter Task Name to continue!" +"Error"+JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private static void createTasksForCurrentLevel(){
 
         tasksPanel.removeAll();
-        tasksPanel.setBorder(BorderFactory.createTitledBorder("Tasks For Today - Level "+ currentLevel));
+        
+        if(usePredefinedTasks){
+            tasksPanel.setBorder(BorderFactory.createTitledBorder("Tasks For Today - Level "+ currentLevel));
+        }else{
+            tasksPanel.setBorder(BorderFactory.createTitledBorder("Custom Tasks - Level " +currentLevel));
+        }
 
         tasksPanel.setLayout(new GridBagLayout());
         GridBagConstraints constrains = new GridBagConstraints();
@@ -217,28 +324,65 @@ public class App implements ActionListener {
         constrains.weightx = 1.0;
         constrains.insets = new Insets(2, 2, 2, 2);
 
+        List<String> currentTasks;
+        if(usePredefinedTasks){
+            currentTasks=taskNames;
+        }else{
+            currentTasks=customTasks;
+
+            if(customTasks.isEmpty()){
+                constrains.gridy=0;
+                constrains.gridx=0;
+                constrains.gridwidth=2;
+                JLabel emptyLabel = new JLabel("No Custom Tasks Yet. Please Click 'Add Task' to create Tasks", JLabel.CENTER);
+                emptyLabel.setForeground(Color.gray);
+                tasksPanel.add(emptyLabel,constrains);
+                tasksPanel.revalidate();
+                tasksPanel.repaint();
+                return;
+            }
+        }
+
 
         int startTaskIndex = (currentLevel-1)*tasksPerLevel;
+
+        if(startTaskIndex>=currentTasks.size()){
+            constrains.gridy=0;
+            constrains.gridx=0;
+            constrains.gridwidth=2;
+            JLabel noTasksLabel = new JLabel("No more Tasks Available. Add More Tasks", JLabel.CENTER);
+            noTasksLabel.setForeground(Color.RED);
+            tasksPanel.add(noTasksLabel,constrains);
+            tasksPanel.revalidate();
+            tasksPanel.repaint();
+            return;
+        }
         taskButtons = new JButton[tasksPerLevel];
         taskLabels = new JLabel[tasksPerLevel];
 
         for(int i=0; i<tasksPerLevel;i++){
             int taskNumber = startTaskIndex+i;
 
-            if(taskNumber < taskNames.size()){
+            if(taskNumber < currentTasks.size()){
+                constrains.gridwidth =1;
                 constrains.gridy = i;
                 constrains.gridx = 0;
                 constrains.weightx = 0.7;
 
                 //JPanel taskRow = new JPanel(new BorderLayout(5,5));
 
-                taskLabels[i] = new JLabel(taskNames.get(taskNumber) + " - PENDING");
+                taskLabels[i] = new JLabel(currentTasks.get(taskNumber) + " - PENDING");
+
+                if(!usePredefinedTasks){
+                    taskLabels[i].setForeground(Color.GREEN);
+                }
+
                 tasksPanel.add(taskLabels[i], constrains);
 
                 constrains.gridx=1;
                 constrains.weightx = 0.3;
 
-                taskButtons[i] = new JButton("Start " + taskNames.get(taskNumber));
+                taskButtons[i] = new JButton("Start " + currentTasks.get(taskNumber));
 
                 int finalI = i;
                 int finalTaskNumber = taskNumber;
@@ -247,7 +391,7 @@ public class App implements ActionListener {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        completeTask(finalI, finalTaskNumber, taskLabels[finalI]);
+                        completeTask(finalI, finalTaskNumber, taskLabels[finalI],currentTasks);
                     }
                 });
 
@@ -264,13 +408,13 @@ public class App implements ActionListener {
 
 
 
-    private static void completeTask(int taskIndex, int taskNumber, JLabel taskLabel){
+    private static void completeTask(int taskIndex, int taskNumber, JLabel taskLabel, List<String> taskSource){
 
-            if(!taskLabel.getText().contains("Completed")){
+            if(taskLabel!=null && !taskLabel.getText().contains("Completed")){
                 taskProgress=taskProgress+(100/tasksPerLevel);
                 progressBar.setValue(taskProgress);
 
-                taskLabel.setText(taskNames.get(taskNumber)+ "- Completed ");
+                taskLabel.setText(taskSource.get(taskNumber)+ "- Completed ");
 
                 taskButtons[taskIndex].setEnabled(false);
 
@@ -291,7 +435,15 @@ public class App implements ActionListener {
                 if(!dailyCompletedTasks.containsKey(today)){
                     dailyCompletedTasks.put(today, new ArrayList<>());
                 }
-                dailyCompletedTasks.get(today).add(taskNames.get(taskNumber));
+                String taskType;
+
+                if(usePredefinedTasks){
+                    taskType="[Predefined] ";
+                }else{
+                    taskType="[Custom] ";
+                }
+
+                dailyCompletedTasks.get(today).add(taskType + taskSource.get(taskNumber));
 
                 if(taskProgress>=100){
                  levelUp();
@@ -307,10 +459,18 @@ public class App implements ActionListener {
         taskProgress=0;
         progressBar.setValue(0);
 
+        List<String> currentTasks;
+
+        if(usePredefinedTasks){
+            currentTasks=taskNames;
+        }else{
+            currentTasks=customTasks;
+        }
+
 
         int nextLevelStart  = (currentLevel-1)*tasksPerLevel;
 
-        if(nextLevelStart < taskNames.size()){
+        if(nextLevelStart < currentTasks.size()){
             createTasksForCurrentLevel();
 
             taskStatusLabel.setText("Level Up! Now At Level "+currentLevel+" - New tasks For the current level");
@@ -429,9 +589,9 @@ public class App implements ActionListener {
 
         JButton clearHistoryButton = new JButton("Clear History");
         clearHistoryButton.addActionListener(e -> {
-            //dailyTaskCount.clear();
-            //dailyCompletedTasks.clear();
-            //graphPanel.repaint();
+            dailyTaskCount.clear();
+            dailyCompletedTasks.clear();
+            graphPanel.repaint();
             statisticLabel.setText("Total Tasks Completed: 0 | Active Days: 0");
         });
 
