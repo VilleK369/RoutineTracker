@@ -29,6 +29,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 public class App implements ActionListener {
         private static  JLabel userLabel;
@@ -56,6 +57,7 @@ public class App implements ActionListener {
         private static JButton switchModeButton;
         private static JRadioButton darkModeSwitchButton;
         private static JRadioButton lightModeSwitchButton;
+        private static boolean isDarkMode;
 
         private static Map<LocalDate, Integer> dailyTaskCount = new HashMap<>();
         private static Map<LocalDate, List<String>> dailyCompletedTasks = new HashMap<>();
@@ -235,13 +237,15 @@ public class App implements ActionListener {
             createTasksForCurrentLevel();
         
         darkModeSwitchButton.addActionListener(e->{
+            isDarkMode = true;
             applyTheme(mainPanel, true);
-            mainPanel.repaint();
+            //mainPanel.repaint();
         });
 
         lightModeSwitchButton.addActionListener(e->{
+            isDarkMode=false;
             applyTheme(mainPanel, false);
-            mainPanel.repaint();
+            //mainPanel.repaint();
         });
 
 
@@ -259,7 +263,7 @@ public class App implements ActionListener {
 
 
             progressFrame.add(mainPanel);
-            progressFrame.setSize(800,500);
+            progressFrame.setSize(900,500);
             progressFrame.setLocationRelativeTo(null);
             progressFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             progressFrame.setVisible(true);
@@ -291,7 +295,7 @@ public class App implements ActionListener {
                 applyTheme((Container) comp, darkMode);
             }else if(comp instanceof JLabel){
                 comp.setForeground(foreGround);
-                comp.setBackground(backGround);
+                //comp.setBackground(backGround);
             }else if(comp instanceof JButton){
                 comp.setBackground(buttonBackGround);
                 comp.setForeground(foreGround);
@@ -301,6 +305,7 @@ public class App implements ActionListener {
             }
         }
         container.setBackground(backGround);
+        container.setForeground(foreGround);
     }
 
     private static void showAddTaskDialog(){
@@ -366,18 +371,23 @@ public class App implements ActionListener {
                 levelLabel.setText("Level: "+currentLevel);
             }
         }else{
-            JOptionPane.showMessageDialog(addTaskFrame, "Please Enter Task Name to continue!" +"Error"+JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(addTaskFrame, "Please Enter Task Name to continue!", "Error" , JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static void createTasksForCurrentLevel(){
 
         tasksPanel.removeAll();
-        
+
+        TitledBorder predefinedBorder = BorderFactory.createTitledBorder("Tasks For Today - Level "+ currentLevel);
+        TitledBorder customBorder = BorderFactory.createTitledBorder("Custom Tasks - Level " +currentLevel);
+
+        predefinedBorder.setTitleColor(Color.gray);
+        customBorder.setTitleColor(Color.gray);
         if(usePredefinedTasks){
-            tasksPanel.setBorder(BorderFactory.createTitledBorder("Tasks For Today - Level "+ currentLevel));
+            tasksPanel.setBorder(predefinedBorder);
         }else{
-            tasksPanel.setBorder(BorderFactory.createTitledBorder("Custom Tasks - Level " +currentLevel));
+            tasksPanel.setBorder(customBorder);
         }
 
         tasksPanel.setLayout(new GridBagLayout());
@@ -465,6 +475,8 @@ public class App implements ActionListener {
 
         tasksPanel.revalidate();
         tasksPanel.repaint();
+
+       applyTheme(tasksPanel, isDarkMode);
 
     }
 
