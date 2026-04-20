@@ -1,0 +1,121 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Locale;
+import javax.swing.*;
+
+public class LoginFrame extends JFrame implements ActionListener {
+    private JTextField userText;
+    private JPasswordField passwordText;
+    private JLabel success;
+    private JButton button;
+    private JButton englishButton;
+    private JButton finnishButton;
+    private JLabel userLabel;
+    private JLabel passwordLabel;
+
+    private LocalizationManager lang;
+
+    public LoginFrame() {
+
+        lang = LocalizationManager.getInstance();
+        
+        setTitle(lang.getString("login.title"));
+        setSize(350, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        add(panel);
+
+        englishButton = new JButton("EN");
+        englishButton.setBounds(100,80,80,25);
+        englishButton.addActionListener(e -> switchLanguage(Locale.ENGLISH, panel));
+
+        finnishButton = new JButton("FI");
+        finnishButton.setBounds(185,80,80,25);
+        finnishButton.addActionListener(e -> switchLanguage(new Locale("fi"), panel));
+
+        panel.add(englishButton);
+        panel.add(finnishButton);
+
+        userLabel = new JLabel(lang.getString("login.username"));
+        userLabel.setBounds(10, 20, 80, 25);
+        panel.add(userLabel);
+
+        userText = new JTextField(20);
+        userText.setBounds(100, 20, 165, 25);
+        panel.add(userText);
+
+        passwordLabel = new JLabel(lang.getString("login.password"));
+        passwordLabel.setBounds(10, 50, 80, 25);
+        panel.add(passwordLabel);
+
+        passwordText = new JPasswordField();
+        passwordText.setBounds(100, 50, 165, 25);
+        panel.add(passwordText);
+
+        button = new JButton(lang.getString("login.button"));
+        button.setBounds(10, 80, 90, 25);
+        button.addActionListener(this);
+        panel.add(button);
+
+        success = new JLabel("");
+        success.setBounds(10, 110, 300, 25);
+        panel.add(success);
+
+        setVisible(true);
+    }
+
+    private void switchLanguage(Locale locale, JPanel panel){
+        lang.setLocale(locale);
+
+        setTitle(lang.getString("login.title"));
+        userLabel.setText(lang.getString("login.username"));
+        passwordLabel.setText(lang.getString("login.password"));
+        button.setText(lang.getString("login.button"));
+
+        if(!success.getText().isEmpty()){
+            success.setText(lang.getString("login.invalid"));
+        }
+        
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String user = userText.getText();
+        String password = new String(passwordText.getPassword());
+
+        if (user.equals("Ville") && password.equals("12345")) {
+            showSuccessDialog();
+            passwordText.setText("");
+            button.setEnabled(false);
+        } else {
+            success.setText(lang.getString("login.invalid"));
+        }
+    }
+
+    private void showSuccessDialog() {
+        JFrame successFrame = new JFrame(lang.getString("login.success"));
+        successFrame.setSize(350, 200);
+        successFrame.setLocationRelativeTo(null);
+        JPanel panel = new JPanel(null);
+
+        JLabel successMessage = new JLabel(lang.getString("login.success"));
+        successMessage.setBounds(100, 25, 150, 25);
+        panel.add(successMessage);
+
+        JButton okButton = new JButton(lang.getString("login.ok"));
+        okButton.setBounds(100, 70, 80, 25);
+        okButton.addActionListener(e -> {
+            successFrame.dispose();
+            new TaskTrackerFrame(userText.getText());
+        });
+
+        panel.add(okButton);
+        successFrame.add(panel);
+        successFrame.setVisible(true);
+    }
+}
