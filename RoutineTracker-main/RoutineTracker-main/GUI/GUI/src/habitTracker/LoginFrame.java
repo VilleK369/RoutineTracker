@@ -97,25 +97,32 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
     }
 
-    private void showSuccessDialog() {
-        JFrame successFrame = new JFrame(lang.getString("login.success"));
-        successFrame.setSize(350, 200);
-        successFrame.setLocationRelativeTo(null);
-        JPanel panel = new JPanel(null);
+ private void showSuccessDialog() {
+    JFrame successFrame = new JFrame(lang.getString("login.success"));
+    successFrame.setSize(350, 200);
+    successFrame.setLocationRelativeTo(null);
 
-        JLabel successMessage = new JLabel(lang.getString("login.success"));
-        successMessage.setBounds(100, 25, 150, 25);
-        panel.add(successMessage);
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints gbc = new GridBagConstraints();
 
-        JButton okButton = new JButton(lang.getString("login.ok"));
-        okButton.setBounds(100, 70, 80, 25);
-        okButton.addActionListener(e -> {
-            successFrame.dispose();
-            new TaskTrackerFrame(userText.getText());
-        });
+    gbc.gridx = 0;
+    gbc.gridy = GridBagConstraints.RELATIVE;
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.anchor = GridBagConstraints.CENTER;
 
-        panel.add(okButton);
-        successFrame.add(panel);
-        successFrame.setVisible(true);
-    }
+    JLabel successMessage = new JLabel(lang.getString("login.success"));
+    successMessage.setFont(new Font("Arial", Font.BOLD, 14));
+    panel.add(successMessage, gbc);
+
+    JButton okButton = new JButton(lang.getString("login.ok"));
+    okButton.addActionListener(e -> {
+        successFrame.dispose();
+        new TaskTrackerFrame(userText.getText());
+    });
+
+    panel.add(okButton, gbc);
+
+    successFrame.add(panel);
+    successFrame.setVisible(true);
+}
 }
