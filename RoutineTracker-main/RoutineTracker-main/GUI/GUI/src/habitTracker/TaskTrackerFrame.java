@@ -360,22 +360,52 @@ private void createTasksForCurrentLevel() {
         }
     }
 
-    private void applyTheme(Container container, boolean darkMode) {
-        Color bg = darkMode ? new Color(45, 45, 45) : Color.WHITE;
-        Color fg = darkMode ? Color.WHITE : Color.BLACK;
-        Color btnBg = darkMode ? new Color(70, 70, 70) : new Color(220, 220, 220);
+private static void applyTheme(Container container, boolean darkMode) {
+   
+    Color backGround;
+    Color foreGround;
+    Color buttonBackGround;
+    Color fieldBackGround; 
 
-        container.setBackground(bg);
-        for (Component comp : container.getComponents()) {
-            comp.setForeground(fg);
-            if (comp instanceof JPanel) {
-                applyTheme((Container) comp, darkMode);
-            } else if (comp instanceof JButton) {
-                comp.setBackground(btnBg);
-            } else if (comp instanceof JProgressBar) {
-                comp.setBackground(bg);
-                comp.setForeground(Color.GREEN);
-            }
+    if (darkMode) {
+        backGround = new Color(45, 45, 45);
+        foreGround = Color.WHITE;
+        buttonBackGround = new Color(70, 70, 70);
+        fieldBackGround = new Color(30, 30, 30); 
+    } else {
+        backGround = Color.WHITE;
+        foreGround = Color.BLACK;
+        buttonBackGround = new Color(220, 220, 220);
+        fieldBackGround = Color.WHITE;
+    }
+
+    container.setBackground(backGround);
+
+  
+    for (Component comp : container.getComponents()) {
+      
+        comp.setForeground(foreGround);
+
+        if (comp instanceof JPanel) {
+           
+            comp.setBackground(backGround);
+            applyTheme((Container) comp, darkMode);
+        } else if (comp instanceof JButton) {
+          
+            comp.setBackground(buttonBackGround);
+        } else if (comp instanceof JTextField) {
+           
+            comp.setBackground(fieldBackGround);
+            ((JTextField) comp).setCaretColor(foreGround);
+        } else if (comp instanceof JRadioButton) {
+           
+            comp.setBackground(backGround);
+            ((JRadioButton) comp).setOpaque(true);
+        } else if (comp instanceof JProgressBar) {
+         
+            comp.setBackground(backGround);
+            comp.setForeground(Color.GREEN);
         }
     }
+}
 }
