@@ -4,12 +4,15 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocalizationManager{
 
     private static LocalizationManager instance;
     private ResourceBundle bundle;
     private Locale currentLocale;
+    private List<LanguageChangeListener> listeners = new ArrayList<>();
 
 
     public static final Locale LOCALE_EN = new Locale("en");
@@ -30,6 +33,10 @@ public class LocalizationManager{
     public void setLocale(Locale locale){
         this.currentLocale = locale;
         this.bundle = ResourceBundle.getBundle("Messages", currentLocale);
+        
+        for(LanguageChangeListener listener : listeners){
+            listener.onLanguageChanged();
+        }
     }
 
     public Locale getCurrentLocale() {
@@ -51,5 +58,15 @@ public class LocalizationManager{
             ((JButton) component).setText(getString(key));
         }
     }
+
+    public void addListener(LanguageChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(LanguageChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+
 
 }
