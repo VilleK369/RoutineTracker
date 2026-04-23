@@ -2,23 +2,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Locale;
 import javax.swing.*;
+import java.awt.*;
 
-public class LoginFrame extends JFrame implements ActionListener {
+public class LoginFrame extends JFrame implements ActionListener, LanguageChangeListener {
+
     private JTextField userText;
     private JPasswordField passwordText;
     private JLabel success;
     private JButton button;
-    private JButton englishButton;
-    private JButton finnishButton;
     private JLabel userLabel;
     private JLabel passwordLabel;
+
+    private JButton languageButton;
+    private JPopupMenu languageMenu;
 
     private LocalizationManager lang;
 
     public LoginFrame() {
 
         lang = LocalizationManager.getInstance();
-        
+        lang.addListener(this);
+
         setTitle(lang.getString("login.title"));
         setSize(350, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,17 +32,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         panel.setLayout(null);
         add(panel);
 
-        englishButton = new JButton("EN");
-        englishButton.setBounds(100,80,80,25);
-        englishButton.addActionListener(e -> switchLanguage(Locale.ENGLISH, panel));
-
-        finnishButton = new JButton("FI");
-        finnishButton.setBounds(185,80,80,25);
-        finnishButton.addActionListener(e -> switchLanguage(new Locale("fi"), panel));
-
-        panel.add(englishButton);
-        panel.add(finnishButton);
-
+     
         userLabel = new JLabel(lang.getString("login.username"));
         userLabel.setBounds(10, 20, 80, 25);
         panel.add(userLabel);
@@ -47,6 +41,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         userText.setBounds(100, 20, 165, 25);
         panel.add(userText);
 
+    
         passwordLabel = new JLabel(lang.getString("login.password"));
         passwordLabel.setBounds(10, 50, 80, 25);
         panel.add(passwordLabel);
@@ -55,10 +50,36 @@ public class LoginFrame extends JFrame implements ActionListener {
         passwordText.setBounds(100, 50, 165, 25);
         panel.add(passwordText);
 
+      
         button = new JButton(lang.getString("login.button"));
         button.setBounds(10, 80, 90, 25);
         button.addActionListener(this);
         panel.add(button);
+
+      
+        languageButton = new JButton("🌐");
+        languageButton.setBounds(280, 20, 50, 25);
+        panel.add(languageButton);
+
+        languageMenu = new JPopupMenu();
+
+        JMenuItem englishItem = new JMenuItem("English");
+        JMenuItem finnishItem = new JMenuItem("Suomi");
+
+        englishItem.addActionListener(e ->
+                lang.setLocale(Locale.ENGLISH)
+        );
+
+        finnishItem.addActionListener(e ->
+                lang.setLocale(new Locale("fi"))
+        );
+
+        languageMenu.add(englishItem);
+        languageMenu.add(finnishItem);
+
+        languageButton.addActionListener(e ->
+                languageMenu.show(languageButton, 0, languageButton.getHeight())
+        );
 
         success = new JLabel("");
         success.setBounds(10, 110, 300, 25);
@@ -67,24 +88,24 @@ public class LoginFrame extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    private void switchLanguage(Locale locale, JPanel panel){
-        lang.setLocale(locale);
-
+  
+    @Override
+    public void onLanguageChanged() {
         setTitle(lang.getString("login.title"));
+
         userLabel.setText(lang.getString("login.username"));
         passwordLabel.setText(lang.getString("login.password"));
         button.setText(lang.getString("login.button"));
 
-        if(!success.getText().isEmpty()){
+        if (!success.getText().isEmpty()) {
             success.setText(lang.getString("login.invalid"));
         }
-        
-        panel.revalidate();
-        panel.repaint();
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
         String user = userText.getText();
         String password = new String(passwordText.getPassword());
 
@@ -97,32 +118,30 @@ public class LoginFrame extends JFrame implements ActionListener {
         }
     }
 
- private void showSuccessDialog() {
-    JFrame successFrame = new JFrame(lang.getString("login.success"));
-    successFrame.setSize(350, 200);
-    successFrame.setLocationRelativeTo(null);
 
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints gbc = new GridBagConstraints();
+    private void showSuccessDialog() {
 
-    gbc.gridx = 0;
-    gbc.gridy = GridBagConstraints.RELATIVE;
-    gbc.insets = new Insets(10, 10, 10, 10);
-    gbc.anchor = GridBagConstraints.CENTER;
+        JFrame successFrame = new JFrame(lang.getString("login.success"));
+        successFrame.setSize(350, 200);
+        successFrame.setLocationRelativeTo(null);
 
-    JLabel successMessage = new JLabel(lang.getString("login.success"));
-    successMessage.setFont(new Font("Arial", Font.BOLD, 14));
-    panel.add(successMessage, gbc);
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-    JButton okButton = new JButton(lang.getString("login.ok"));
-    okButton.addActionListener(e -> {
-        successFrame.dispose();
-        new TaskTrackerFrame(userText.getText());
-    });
+        JLabel successMessage = new JLabel(lang.getString("login.success"));
+        successMessage.setFont(new Font("Arial", Font.BOLD, 14));
+        panel.add(successMessage, gbc);
 
-    panel.add(okButton, gbc);
+        JButton okButton = new JButton(lang.getString("login.ok"));
+        okButton.addActionListener(e -> {
+            successFrame.dispose();
+            new TaskTrackerFrame(userText.getText());
+        });
 
-    successFrame.add(panel);
-    successFrame.setVisible(true);
-}
+        panel.add(okButton, gbc);
+
+        successFrame.add(panel);
+        successFrame.setVisible(true);
+    }
 }
