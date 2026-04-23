@@ -1,13 +1,20 @@
+import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
 
-public class StatisticsWindow extends JFrame {
+public class StatisticsWindow extends JFrame implements LanguageChangeListener {
+    private JLabel titleLabel;
+    private JLabel statisticLabel;
+    private JButton clearHistoryButton;
+
+    private LocalizationManager lang = LocalizationManager.getInstance();
     public StatisticsWindow() {
-        setTitle("Daily Statistics");
+
+        lang.addListener(this);
+        setTitle(lang.getString("statistics.title"));
         setSize(600, 550);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -15,7 +22,7 @@ public class StatisticsWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel titleLabel = new JLabel("Daily Task Statistics", JLabel.CENTER);
+        titleLabel = new JLabel(lang.getString("statistics.title"), JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
@@ -39,15 +46,15 @@ public class StatisticsWindow extends JFrame {
         int totalCompletedTasks = AppData.dailyCompletedTasks.values().stream().mapToInt(List::size).sum();
         int activeDays = AppData.dailyTaskCount.size();
 
-        JLabel statisticLabel = new JLabel(String.format("Total Tasks Completed: %d | Active Days: %d", totalCompletedTasks, activeDays), JLabel.LEFT);
+        statisticLabel = new JLabel(String.format(lang.getString("statistics.total_completed"), totalCompletedTasks) + " | " + String.format(lang.getString("statistics.active_days"), activeDays), JLabel.LEFT);
         statisticLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 
-        JButton clearHistoryButton = new JButton("Clear History");
+        clearHistoryButton = new JButton(lang.getString("statistics.clear_history"));
         clearHistoryButton.addActionListener(e -> {
             AppData.dailyTaskCount.clear();
             AppData.dailyCompletedTasks.clear();
             graphPanel.repaint();
-            statisticLabel.setText("Total Tasks Completed: 0 | Active Days: 0");
+            statisticLabel.setText(String.format(lang.getString("statistics.total_completed"), 0) + " | " + String.format(lang.getString("statistics.active_days"), 0));
         });
 
         mainPanel.add(graphPanel, BorderLayout.CENTER);
@@ -76,7 +83,7 @@ public class StatisticsWindow extends JFrame {
         g2d.drawLine(padding, height - padding, width - padding, height - padding); // X-akseli
 
         if (AppData.dailyTaskCount.isEmpty()) {
-            g2d.drawString("No Data Available", width / 2 - 50, height / 2);
+            g2d.drawString(lang.getString("statistics.no_data"), width / 2 - 50, height / 2);
             return;
         }
 
@@ -127,6 +134,34 @@ public class StatisticsWindow extends JFrame {
             g2d.drawLine(padding - 5, y, padding, y); 
         }
 
-        g2d.drawString("Tasks Completed", 10, 50);
+        g2d.drawString(lang.getString("statistics.tasks_completed"), 10, 50);
     }
+
+    @Override
+    public void onLanguageChanged() {
+
+    setTitle(lang.getString("statistics.title"));
+
+    titleLabel.setText(lang.getString("statistics.title"));
+
+    int totalCompletedTasks =
+            AppData.dailyCompletedTasks.values()
+                    .stream()
+                    .mapToInt(List::size)
+                    .sum();
+
+    int activeDays = AppData.dailyTaskCount.size();
+
+    statisticLabel.setText(
+            lang.getString("statistics.total_completed") + ": " +
+            totalCompletedTasks +
+            " | " +
+            lang.getString("statistics.active_days") + ": " +
+            activeDays
+    );
+
+    clearHistoryButton.setText(lang.getString("button.clear_history"));
+
+    repaint();
+}
 }
