@@ -63,8 +63,8 @@ public class LoginFrame extends JFrame implements ActionListener, LanguageChange
 
         languageMenu = new JPopupMenu();
 
-        JMenuItem englishItem = new JMenuItem("English");
-        JMenuItem finnishItem = new JMenuItem("Suomi");
+        JMenuItem englishItem = new JMenuItem("EN");
+        JMenuItem finnishItem = new JMenuItem("FI");
 
         englishItem.addActionListener(e ->
                 lang.setLocale(Locale.ENGLISH)
