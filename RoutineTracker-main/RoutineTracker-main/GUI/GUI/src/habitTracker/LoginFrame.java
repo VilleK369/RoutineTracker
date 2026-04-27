@@ -109,7 +109,7 @@ public class LoginFrame extends JFrame implements ActionListener, LanguageChange
         String user = userText.getText();
         String password = new String(passwordText.getPassword());
 
-        if (user.equals("Ville") && password.equals("12345")) {
+        if (user.equals("Käyttäjä") && password.equals("12345")) {
             showSuccessDialog();
             passwordText.setText("");
             button.setEnabled(false);
@@ -119,29 +119,31 @@ public class LoginFrame extends JFrame implements ActionListener, LanguageChange
     }
 
 
-    private void showSuccessDialog() {
+private void showSuccessDialog() {
 
-        JFrame successFrame = new JFrame(lang.getString("login.success"));
-        successFrame.setSize(350, 200);
-        successFrame.setLocationRelativeTo(null);
+    JDialog dialog = new JDialog(this, lang.getString("login.success"), true);
+    dialog.setSize(300, 150);
+    dialog.setLayout(new GridBagLayout());
+    dialog.setLocationRelativeTo(this); // 🔥 keskittää ikkunan
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.gridx = 0;
+    gbc.gridy = 0;
 
-        JLabel successMessage = new JLabel(lang.getString("login.success"));
-        successMessage.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(successMessage, gbc);
+    JLabel message = new JLabel(lang.getString("login.success"));
+    message.setFont(new Font("Arial", Font.BOLD, 14));
+    dialog.add(message, gbc);
 
-        JButton okButton = new JButton(lang.getString("login.ok"));
-        okButton.addActionListener(e -> {
-            successFrame.dispose();
-            new TaskTrackerFrame(userText.getText());
-        });
+    JButton okButton = new JButton(lang.getString("login.ok"));
+    gbc.gridy = 1;
+    dialog.add(okButton, gbc);
 
-        panel.add(okButton, gbc);
+    okButton.addActionListener(e -> {
+        dialog.dispose();
+        new TaskTrackerFrame(userText.getText());
+    });
 
-        successFrame.add(panel);
-        successFrame.setVisible(true);
-    }
+    dialog.setVisible(true);
+}
 }
