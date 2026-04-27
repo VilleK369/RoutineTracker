@@ -9,6 +9,7 @@ public class StatisticsWindow extends JFrame implements LanguageChangeListener {
     private JLabel titleLabel;
     private JLabel statisticLabel;
     private JButton clearHistoryButton;
+    private JButton cancelButton;
 
     private LocalizationManager lang = LocalizationManager.getInstance();
     public StatisticsWindow() {
@@ -58,10 +59,20 @@ public class StatisticsWindow extends JFrame implements LanguageChangeListener {
         });
 
         mainPanel.add(graphPanel, BorderLayout.CENTER);
-        
+
         JPanel controlPanel = new JPanel(new BorderLayout());
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+       
+        cancelButton = new JButton(lang.getString("statistics.cancel"));
+        cancelButton.addActionListener(e -> dispose());
+
+        bottomPanel.add(cancelButton);       
+        bottomPanel.add(clearHistoryButton); 
+
         controlPanel.add(statisticLabel, BorderLayout.NORTH);
-        controlPanel.add(clearHistoryButton, BorderLayout.SOUTH);
+        controlPanel.add(bottomPanel, BorderLayout.SOUTH);
+
         mainPanel.add(controlPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
@@ -77,7 +88,7 @@ public class StatisticsWindow extends JFrame implements LanguageChangeListener {
         int graphHeight = height - 2 * padding;
         int graphWidth = width - 2 * padding;
 
-        // Piirretään akselit
+      
         g2d.setColor(Color.BLACK);
         g2d.drawLine(padding, padding, padding, height - padding); // Y-akseli
         g2d.drawLine(padding, height - padding, width - padding, height - padding); // X-akseli
@@ -111,7 +122,7 @@ public class StatisticsWindow extends JFrame implements LanguageChangeListener {
             int y = height - padding - barHeight;
 
          
-            g2d.setColor(new Color(100, 149, 237)); // Cornflower Blue
+            g2d.setColor(new Color(100, 149, 237)); 
             g2d.fillRect(x, y, barWidth, barHeight);
 
             g2d.setColor(Color.BLACK);
@@ -160,7 +171,8 @@ public class StatisticsWindow extends JFrame implements LanguageChangeListener {
             activeDays
     );
 
-    clearHistoryButton.setText(lang.getString("button.clear_history"));
+    clearHistoryButton.setText(lang.getString("statistics.clear_history"));
+    cancelButton.setText(lang.getString("statistics.cancel")); 
 
     repaint();
 }
